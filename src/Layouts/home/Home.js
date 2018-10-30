@@ -1,7 +1,6 @@
 import React from "react";
-import axios from "axios";
-import withScroll from "../../components/withscroll/withScroll";
 import Load from "./loading.gif";
+import axios from "axios";
 
 class Home extends React.Component {
   constructor(props) {
@@ -9,43 +8,23 @@ class Home extends React.Component {
     this.state = {
       page: 1,
       limit: 20,
-      search: "".split(" ").join("_"),
       results: [],
       loading: false,
-      searching: false
+      searching: false,
+      search: "".split(" ").join("_")
     };
   }
-
   onChange = e => {
     this.setState({ [e.target.name]: e.target.value });
   };
 
-  addToFav = e => {
-    const { results } = this.state;
-    let obj = { ...results[e.target.id - 1], fav: true };
-    // console.log("cdc", obj);
-    let arr = results;
-    arr[e.target.id - 1] = obj;
-    console.log(arr);
-    this.setState({ results: arr });
-    this.props.addFav(e.target.id);
-  };
-
-  removeFromFav = e => {
-    const { results } = this.state;
-    let obj = { ...results[e.target.id - 1], fav: false };
-    // console.log("cdc", obj);
-    let arr = results;
-    arr[e.target.id - 1] = obj;
-    console.log(arr);
-    this.setState({ results: arr });
-    this.props.removeFav(e.target.id);
-  };
-
   getData = async () => {
+    // console.log("getData");
     //=============if Search String is empty ===================================
     if (this.state.search === "") {
+      // set loading state to true
       await this.setState({ loading: true });
+      //send API call to get all the beers on initial HOME page Load
       axios
         .get(`/beers?page=${this.state.page}&per_page=${this.state.limit}`)
         .then(res => res.data)
@@ -53,13 +32,17 @@ class Home extends React.Component {
           data.map(obj => {
             return (obj.fav = false);
           });
+          //set API responce into results state
           this.setState({ results: this.state.results.concat(data) });
         })
+        //set Loading state to false
         .then(() => this.setState({ loading: false }));
     }
     //=============if Search String is Not Empty================================
     if (this.state.search !== "") {
+      // set Searching state to true
       await this.setState({ searching: true });
+      //send API call to get all the beers on initial HOME page Load
       axios
         .get(
           `/beers?page=${this.state.page}&per_page=${
@@ -67,25 +50,57 @@ class Home extends React.Component {
           }&beer_name=${this.state.search}`
         )
         .then(res => res.data)
+        //set API responce into results state
         .then(data => this.setState({ results: data }))
         .then(() => {
+          // set Searching state to false
           this.setState({ searching: false });
           this.setState({ search: "" });
         });
     }
   };
 
+  //function for adding item to Favourites in App state
+  addToFav = e => {
+    const { results } = this.state;
+
+    let arr = results.map(obj => {
+      if (Number(obj.id) === Number(e.target.id)) {
+        return { ...obj, fav: true };
+      } else {
+        return obj;
+      }
+    });
+    this.setState({ results: arr });
+    this.props.addFav(e.target.id);
+  };
+
+  //remove favourites from results in App State
+  removeFromFav = e => {
+    const { results } = this.state;
+    let arr = results.map(obj => {
+      if (Number(obj.id) === Number(e.target.id)) {
+        return { ...obj, fav: false };
+      } else {
+        return obj;
+      }
+    });
+    this.setState({ results: arr });
+    this.props.removeFav(e.target.id);
+  };
+
   componentDidMount() {
+    this.setState({ loading: true });
     this.getData();
-    console.log("scroll position", this.props.scrollPosition);
   }
 
   async componentWillReceiveProps(nextProps) {
-    console.log("new scroll", nextProps.scrollPosition);
-    if (nextProps.scrollPosition > 1500) {
+    // checks if scroll postion props has changed to true then
+    //send API request for next page when scrolled to bottom
+    if (nextProps.scrollToBottom === true) {
       await this.setState({ loading: true });
       await this.setState({ page: this.state.page + 1 });
-      this.getData();
+      await this.getData();
     }
   }
 
@@ -174,4 +189,4 @@ class Home extends React.Component {
   }
 }
 
-export default withScroll(Home);
+export default Home;

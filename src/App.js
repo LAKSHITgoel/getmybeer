@@ -8,22 +8,33 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      favourites: []
+      favourites: [],
+      scrollToBottom: false
     };
   }
 
-  removeFav = id => {
-    let arr = this.state.favourites.filter(item => item !== id);
+  componentDidMount() {
+    //adding Event Listener for scrolling event for Infinite Scrolling and paging
+    window.onscroll = e => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        // you're at the bottom of the page
+        this.setState({ scrollToBottom: true });
+      } else {
+        this.setState({ scrollToBottom: false });
+      }
+    };
+  }
+
+  //remove favourites from state
+  removeFav = async id => {
+    let arr = await this.state.favourites.filter(item => item !== id);
     this.setState({ favourites: arr });
   };
 
-  addFav = id => {
-    this.setState({ favourites: [...this.state.favourites, id] });
+  //add favourites into state
+  addFav = async id => {
+    await this.setState({ favourites: [...this.state.favourites, id] });
   };
-
-  // removeFav = id => {
-  //   this.setState({favourites:})
-  // }
 
   render() {
     return (
@@ -36,6 +47,7 @@ class App extends React.Component {
               path="/"
               render={() => (
                 <Home
+                  {...this.state}
                   addFav={this.addFav}
                   removeFav={this.removeFav}
                   {...this.props}
@@ -49,6 +61,7 @@ class App extends React.Component {
                 <Favourites
                   addFav={this.addFav}
                   removeFav={this.removeFav}
+                  {...this.state}
                   {...this.props}
                 />
               )}
