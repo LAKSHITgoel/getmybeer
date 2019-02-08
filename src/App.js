@@ -1,39 +1,45 @@
 import React from "react";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar";
 import Home from "./Layouts/home/Home";
 import Favourites from "./Layouts/favoutites/Favourites";
+import axios from "axios";
+import { store } from "./store";
+import { GET_BEERS } from "./store/constants";
 
 class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      favourites: [],
-      scrollToBottom: false
-    };
-  }
+  state = { search: "", page: 1, scrollToBottom: false };
 
   componentDidMount() {
     //adding Event Listener for scrolling event for Infinite Scrolling and paging
     window.onscroll = e => {
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
         // you're at the bottom of the page
-        this.setState({ scrollToBottom: true });
-      } else {
-        this.setState({ scrollToBottom: false });
+        this.setState({ page: this.state.page + 1 }, () => {
+          this.getBeer(this.state.page);
+        });
       }
     };
+    console.log("hoem");
+    this.getBeer(this.state.page);
   }
 
-  //remove favourites from state
-  removeFav = async id => {
-    let arr = await this.state.favourites.filter(item => item !== id);
-    this.setState({ favourites: arr });
-  };
-
-  //add favourites into state
-  addFav = async id => {
-    await this.setState({ favourites: [...this.state.favourites, id] });
+  getBeer = async page => {
+    axios
+      .get(`/beers?page=${page}&per_page=20`)
+      .then(res => res.data)
+      .then(data => {
+        data.map(obj => {
+          return (obj.fav = false);
+        });
+        // this.props.getBeer(data);
+        store.dispatch({
+          type: GET_BEERS,
+          payload: {
+            beers: [...data]
+          }
+        });
+      });
   };
 
   render() {
@@ -42,30 +48,10 @@ class App extends React.Component {
         <Router>
           <div>
             <Navbar />
-            <Route
-              exact
-              path="/"
-              render={() => (
-                <Home
-                  {...this.state}
-                  addFav={this.addFav}
-                  removeFav={this.removeFav}
-                  {...this.props}
-                />
-              )}
-            />
-            <Route
-              exact
-              path="/fav"
-              render={() => (
-                <Favourites
-                  addFav={this.addFav}
-                  removeFav={this.removeFav}
-                  {...this.state}
-                  {...this.props}
-                />
-              )}
-            />
+            <Switch>
+              <Route exact path="/" render={() => <Home />} />
+              <Route exact path="/fav" render={() => <Favourites />} />
+            </Switch>
           </div>
         </Router>
       </div>
