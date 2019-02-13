@@ -1,5 +1,5 @@
 import React from "react";
-import Loader from "../../components/Loader";
+// import Loader from "../../components/Loader";
 import BeerCard from "../../components/BeerCard";
 import { connect } from "react-redux";
 import {
@@ -8,12 +8,23 @@ import {
   searchBeer,
   removeFromFav
 } from "../../store/actionCreators";
-import axios from "axios";
+// import axios from "axios";
 
 class Home extends React.Component {
-  state = { search: "" };
+  state = { search: "", page: 1, scrollToBottom: false };
 
-  // srchBeer = beer_name => {};
+  componentDidMount() {
+    //adding Event Listener for scrolling event for Infinite Scrolling and paging
+    window.onscroll = e => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+        // you're at the bottom of the page
+        this.setState({ page: this.state.page + 1 }, () => {
+          this.props.getBeer(this.state.page);
+        });
+      }
+    };
+    this.props.getBeer(this.state.page);
+  }
 
   onChange = e => this.setState({ [e.target.name]: e.target.value });
 

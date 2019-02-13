@@ -2,41 +2,42 @@ import {
   ADD_TO_FAV,
   GET_BEERS,
   SEARCH_BEER,
-  REMOVE_FROM_FAV
+  REMOVE_FROM_FAV,
+  FETCH_BEERS
 } from "../constants";
 
-export const getBeer = beers => dispatch => {
-  dispatch({
-    type: GET_BEERS,
+export const getBeer = page => {
+  return {
+    type: FETCH_BEERS,
     payload: {
-      beers
+      page
     }
-  });
+  };
 };
 
-export const searchBeer = beer_name => dispatch => {
-  dispatch({
+export const searchBeer = beer_name => {
+  return {
     type: SEARCH_BEER,
     payload: {
       search: beer_name
     }
-  });
+  };
 };
 
-export const addToFav = id => dispatch => {
-  dispatch({
+export const addToFav = id => {
+  return {
     type: ADD_TO_FAV,
     payload: {
       id
     }
-  });
+  };
 };
 
-export const removeFromFav = id => dispatch => {
-  dispatch({
+export const removeFromFav = id => {
+  return {
     type: REMOVE_FROM_FAV,
     payload: {
       id
     }
-  });
+  };
 };

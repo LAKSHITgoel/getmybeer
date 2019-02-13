@@ -13,7 +13,8 @@ const initialState = {
 export default (state = initialState, action) => {
   switch (action.type) {
     case GET_BEERS: {
-      return { ...state, beers: [...state.beers, ...action.payload.beers] };
+      return { ...state, beers: [...state.beers, ...action.payload] };
+      // return state;
     }
 
     case SEARCH_BEER: {
